@@ -5,6 +5,10 @@ export class ButtonsPo extends BaseComponent {
   pageTitle = 'Buttons';
   ghLinkToComponent = 'https://github.com/valor-software/ngx-bootstrap/tree/development/src/buttons';
 
+  output = '.card-header';
+  buttonSel = 'button';
+  btnRadioGroupSel = '[btnradiogroup]';
+
   exampleDemosArr = {
     basic: 'demo-buttons-basic',
     checkbox: 'demo-buttons-checkbox',

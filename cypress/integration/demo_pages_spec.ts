@@ -17,47 +17,63 @@ import { TimepickerPo } from '../support/timepicker.po';
 import { TooltipPo } from '../support/tooltip.po';
 import { TypeaheadPo } from '../support/typeahead.po';
 
+describe('Component content displaying test suite', () => {
+  const componentsArray = [
+    new AccordionPo(),
+    new AlertsPo(),
+    new ButtonsPo(),
+    new CarouselPo(),
+    new CollapsePo(),
+    new DatepickerPo(),
+    new DropdownsPo(),
+    new ModalsPo(),
+    new PaginationPo(),
+    new PopoverPo(),
+    new RatingPo(),
+    new SortablePo(),
+    new TabsPo(),
+    new TimepickerPo(),
+    new TooltipPo(),
+    new TypeaheadPo()
+  ];
+
+  it('each page loads and displays it\'s title with link in it and usage example', () => {
+    componentsArray.forEach(page => {
+      page.navigateTo();
+
+      cy.get(page.titleSel)
+        .should('be.visible')
+        .and('to.contain', page.pageTitle);
+
+      cy.get(page.titleLinkSel)
+        .should('be.enabled')
+        .and('have.attr', 'href', page.ghLinkToComponent);
+
+      cy.get(page.usageExSel)
+        .should('be.visible')
+        .and('to.contain', page.titleDefaultExample);
+
+      cy.get(page.usageExCodeSel)
+        .should('be.visible')
+        .and('not.to.be.empty');
+    });
+  });
+});
+
 describe('Accordion page test suite', () => {
   const accordion = new AccordionPo();
 
   beforeEach(() => accordion.navigateTo());
 
-  describe('Content section', () => {
-    it('page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to accordion component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', accordion.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', accordion.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', accordion.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Simple accordion', () => {
     const basicDemo = accordion.exampleDemosArr.basic;
 
-    it('each panel opens content at first click', () => {
+    it('panels open content at first click', () => {
       accordion.getAccordionPanel(basicDemo, 0).as('firstPanel')
         .click();
 
       cy.get('@firstPanel')
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
 
       accordion.getAccordionPanel(basicDemo, 1).as('secondPanel')
         .click();
@@ -65,9 +81,9 @@ describe('Accordion page test suite', () => {
         .click();
 
       cy.get('@secondPanel')
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       cy.get('@fourthPanel')
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
     });
 
     it('after double click panels are closed', () => {
@@ -77,9 +93,9 @@ describe('Accordion page test suite', () => {
         .dblclick();
 
       cy.get('@firstPanel')
-        .should('not.to.have.class', 'panel-open');
+        .should('not.to.have.class', accordion.openClass);
       cy.get('@secondPanel')
-        .should('not.to.have.class', 'panel-open');
+        .should('not.to.have.class', accordion.openClass);
     });
   });
 
@@ -89,12 +105,12 @@ describe('Accordion page test suite', () => {
     it('first panel can be disabled or enabled', () => {
       accordion.clickByText(disabledDemo, accordion.buttonEnableDisable);
 
-      accordion.getAccordionPanel(disabledDemo, 0).as('firstPanel').find('.text-muted')
+      accordion.getAccordionPanel(disabledDemo, 0).as('firstPanel').find(accordion.disabledPanelText)
         .should('to.be.exist');
 
       accordion.clickByText(disabledDemo, accordion.buttonEnableDisable);
 
-      cy.get('@firstPanel').find('.text-muted')
+      cy.get('@firstPanel').find(accordion.disabledPanelText)
         .should('not.to.be.exist');
     });
   });
@@ -106,12 +122,12 @@ describe('Accordion page test suite', () => {
       accordion.clickByText(dynamicDemo, accordion.buttonPanelToggler);
 
       accordion.getAccordionPanel(dynamicDemo, 4).as('dynamicPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
 
       accordion.clickByText(dynamicDemo, accordion.buttonPanelToggler);
 
       cy.get('@dynamicPanel')
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
     });
 
     it('items in fourth collapse-panel can be added dynamic', () => {
@@ -134,36 +150,36 @@ describe('Accordion page test suite', () => {
       cy.get(onePanelDemo).find('input').check();
 
       accordion.getAccordionPanel(onePanelDemo, 0).as('firstPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       accordion.getAccordionPanel(onePanelDemo, 1).as('secondPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
       accordion.getAccordionPanel(onePanelDemo, 2).as('thirdPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
 
       cy.get('@thirdPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       cy.get('@firstPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
       cy.get('@secondPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
     });
 
     it('closeOthers property sets as false - not only one panel can be opened at a time', () => {
       cy.get(onePanelDemo).find('input').uncheck();
 
       accordion.getAccordionPanel(onePanelDemo, 0).as('firstPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       accordion.getAccordionPanel(onePanelDemo, 1).as('secondPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
       accordion.getAccordionPanel(onePanelDemo, 2).as('thirdPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
 
       cy.get('@thirdPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       cy.get('@firstPanel')
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       cy.get('@secondPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
     });
   });
 
@@ -174,16 +190,16 @@ describe('Accordion page test suite', () => {
       const stylesPanel = ['rgb(91, 192, 222)', 'rgb(255, 255, 255)'];
       const stylePanelBody = 'rgb(51, 122, 167)';
 
-      accordion.getAccordionPanel(stylingDemo, 0).children('.card').as('firstPanel')
+      accordion.getAccordionPanel(stylingDemo, 0).children(accordion.panelCard).as('firstPanel')
         .should('to.have.css', 'background-color', stylesPanel[0])
         .and('to.have.css', 'color', stylesPanel[1]);
-      cy.get('@firstPanel').find('.panel-body')
+      cy.get('@firstPanel').find(accordion.panelBody)
         .should('to.have.css', 'background-color', stylePanelBody);
 
-      accordion.getAccordionPanel(stylingDemo, 2).children('.card').as('thirdPanel')
+      accordion.getAccordionPanel(stylingDemo, 2).children(accordion.panelCard).as('thirdPanel')
         .should('to.have.css', 'background-color', stylesPanel[0])
         .and('to.have.css', 'color', stylesPanel[1]);
-      cy.get('@thirdPanel').find('.panel-body')
+      cy.get('@thirdPanel').find(accordion.panelBody)
         .should('to.have.css', 'background-color', stylePanelBody);
     });
   });
@@ -193,18 +209,18 @@ describe('Accordion page test suite', () => {
 
     it('example opens only one panel at a time', () => {
       accordion.getAccordionPanel(configDemo, 0).as('firstPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       accordion.getAccordionPanel(configDemo, 1).as('secondPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
       accordion.getAccordionPanel(configDemo, 2).as('thirdPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
 
       cy.get('@secondPanel').click()
-        .should('have.class', 'panel-open');
+        .should('have.class', accordion.openClass);
       cy.get('@firstPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
       cy.get('@thirdPanel')
-        .should('not.have.class', 'panel-open');
+        .should('not.have.class', accordion.openClass);
     });
   });
 });
@@ -212,43 +228,13 @@ describe('Accordion page test suite', () => {
 describe('Alerts page test suite', () => {
   const alerts = new AlertsPo();
 
-  let alertTypes: string[];
-  let stylesColors: string[];
-
   beforeEach(() => alerts.navigateTo());
-
-  describe('Content section', () => {
-    it('page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to alert component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', alerts.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', alerts.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', alerts.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Basic alert', () => {
     const basicDemo = alerts.exampleDemosArr.basic;
 
     it('success, info, warning and danger types of alerts are displayed', () => {
-      alertTypes = [
+      const alertTypes = [
         'alert-success',
         'alert-info',
         'alert-warning',
@@ -262,12 +248,16 @@ describe('Alerts page test suite', () => {
 
   describe('Link color', () => {
     const linkDemo = alerts.exampleDemosArr.link;
+    const alertTypes = [
+      'alert-success',
+      'alert-info',
+      'alert-warning',
+      'alert-danger'
+    ];
 
     it('links can be provided by class alert-link', () => {
-      cy.get(linkDemo).find('div').as('alertsLink').each(() => {
-        cy.get('@alertsLink').find(alerts.linkClass)
-          .should('have.attr', 'href', '#');
-      });
+      alertTypes.forEach(type => cy.get(`${ linkDemo } .${ type }`).find(alerts.linkClass)
+        .should('have.attr', 'href', '#'));
     });
   });
 
@@ -275,87 +265,89 @@ describe('Alerts page test suite', () => {
     const contentDemo = alerts.exampleDemosArr.content;
 
     it('alert with additional content contains html elements', () => {
-      cy.get(contentDemo).find('div')
+      cy.get(contentDemo).find(alerts.alertClass)
         .should('to.have.descendants', 'h4')
-        .and('to.have.descendants', 'p');
+        .and('to.have.descendants', 'p')
+        .and('to.have.descendants', alerts.heading);
     });
   });
 
   describe('Dismissing alert', () => {
     const dismissingDemo = alerts.exampleDemosArr.dismissing;
+    const alertTypes = [
+      'alert-success',
+      'alert-info',
+      'alert-danger'
+    ];
 
     it('alerts can stop being dismissible', () => {
-      cy.get(dismissingDemo).find('alert').as('dismissAlert').last()
-        .should('to.have.descendants', '.close');
+      cy.get(dismissingDemo).find(alerts.alertClass).last().as('dismissAlert')
+        .should('to.have.descendants', alerts.dismissOption);
 
       alerts.clickByText(dismissingDemo, alerts.buttonToggler);
-      cy.get('@dismissAlert').last()
-        .should('not.to.have.descendants', '.close');
+      cy.get('@dismissAlert')
+        .should('not.to.have.descendants', alerts.dismissOption);
+
+      alerts.clickByText(dismissingDemo, alerts.buttonToggler);
+      cy.get('@dismissAlert')
+        .should('to.have.descendants', alerts.dismissOption);
     });
 
     it('alerts can all be closed and then resetting to default state', () => {
-      cy.get(dismissingDemo).find('alert').as('dismissAlert').each($alert => {
-        $alert.find('.close').click();
-      });
+      alertTypes.forEach(type =>
+        cy.get(`${ dismissingDemo } .${ type } ${alerts.dismissOption}`).click());
 
-      cy.get('@dismissAlert')
-        .should('not.to.have.descendants', 'div');
+      alertTypes.forEach(type => cy.get(`${ dismissingDemo } .${ type }`)
+        .should('not.to.exist'));
 
       alerts.clickByText(dismissingDemo, alerts.buttonReset);
-      cy.get('@dismissAlert')
-        .should('to.have.descendants', 'div');
+      alertTypes.forEach(type => cy.get(`${ dismissingDemo } .${ type }`)
+        .should('to.exist'));
     });
   });
 
   describe('Dynamic html', () => {
     const dynamicHtml = alerts.exampleDemosArr.dynamicHtml;
+    const alertTypes = [
+      'alert-success',
+      'alert-info',
+      'alert-danger'
+    ];
 
     it('each alert contains style and content from component', () => {
-      alertTypes = [
-        'alert-success',
-        'alert-info',
-        'alert-danger'
-      ];
-
-      cy.get(dynamicHtml).find('alert').children('div').as('alertsDynamic').each(($alert, i) => {
-        expect($alert).to.have.class(alertTypes[i]);
-        cy.get('@alertsDynamic').eq(i)
-          .should('be.visible')
-          .and('to.have.descendants', 'span');
-      });
+      alertTypes.forEach(type => cy.get(`${ dynamicHtml} .${ type }`)
+        .should('be.visible')
+        .and('to.have.descendants', alerts.textWrapper));
     });
   });
 
   describe('Dynamic content', () => {
     const dynamicContent = alerts.exampleDemosArr.dynamicContent;
+    const dynamicAlertText = [
+      'You successfully read this important alert message.',
+      'Now this text is different from what it was before. Go ahead and click the button one more time',
+      'Well done! Click reset button'
+    ];
 
-    it('alert\'s content can be changed by click on button', () => {
-      cy.get(dynamicContent).find('.alert').as('alertDynamicText')
-        .should('to.contain', alerts.dynamicAlertText[0]);
-
-      alerts.clickByText(dynamicContent, alerts.buttonChangeText);
-      cy.get('@alertDynamicText')
-        .should('to.contain', alerts.dynamicAlertText[1])
-        .and('not.to.contain', alerts.dynamicAlertText[0]);
-
-      alerts.clickByText(dynamicContent, alerts.buttonChangeText);
-      cy.get('@alertDynamicText')
-        .should('to.contain', alerts.dynamicAlertText[2]);
-
-      alerts.clickByText(dynamicContent, alerts.buttonReset);
-      cy.get('@alertDynamicText')
-        .should('to.contain', alerts.dynamicAlertText[0])
-        .and('not.to.contain', alerts.dynamicAlertText[2]);
+    it('alert\'s content can be changed dynamicly', () => {
+      dynamicAlertText.forEach(text => {
+        cy.get(dynamicContent).find(alerts.alertClass)
+          .should('to.contain', text);
+        cy.get(dynamicContent).find('button').click();
+      });
     });
   });
 
   describe('Global styling', () => {
     const globalStyle = alerts.exampleDemosArr.globalStyling;
+    const stylesColors = [
+      'rgb(123, 31, 162)', // violet
+      'rgb(74, 20, 140)', // indigo
+      'rgb(255, 255, 255)' // white
+    ];
 
-    it('each alert has added style', () => {
-      stylesColors = ['rgb(123, 31, 162)', 'rgb(74, 20, 140)', 'rgb(255, 255, 255)'];
-
-      cy.get(globalStyle).find('.alert')
+    it('alert is displayed with added style', () => {
+      cy.get(globalStyle).find(alerts.alertClass)
         .should('to.have.css', 'background-color', stylesColors[0])
         .and('to.have.css', 'border-color', stylesColors[1])
         .and('to.have.css', 'color', stylesColors[2]);
@@ -364,11 +356,14 @@ describe('Alerts page test suite', () => {
 
   describe('Component level styling', () => {
     const componentStyle = alerts.exampleDemosArr.localStyling;
+    const stylesColors = [
+      'rgb(0, 150, 136)', // dark cyan
+      'rgb(0, 105, 92)', // mosque
+      'rgb(255, 255, 255)' // white
+    ];
 
-    it('each alert has added style', () => {
-      stylesColors = ['rgb(0, 150, 136)', 'rgb(0, 105, 92)', 'rgb(255, 255, 255)'];
-
-      cy.get(componentStyle).find('.alert')
+    it('alert is displayed with added style', () => {
+      cy.get(componentStyle).find(alerts.alertClass)
         .should('to.have.css', 'background-color', stylesColors[0])
         .and('to.have.css', 'border-color', stylesColors[1])
         .and('to.have.css', 'color', stylesColors[2]);
@@ -377,17 +372,14 @@ describe('Alerts page test suite', () => {
 
   describe('Configuring defaults', () => {
     const configDemo = alerts.exampleDemosArr.config;
+    const alertTypes = [
+      'alert-success',
+      'alert-info'
+    ];
 
     it('each alert contains added config', () => {
-      alertTypes = [
-        'alert-success',
-        'alert-info'
-      ];
-
-      cy.get(configDemo).find('.alert').as('configuredAlerts').eq(0)
-        .should('to.have.class', alertTypes[0]);
-      cy.get('@configuredAlerts').eq(1)
-        .should('to.have.class', alertTypes[1]);
+      alertTypes.forEach(type => cy.get(`${ configDemo } .${ type }`)
+        .should('be.visible'));
     });
   });
 });
@@ -395,37 +387,13 @@ describe('Alerts page test suite', () => {
 describe('Buttons page test suite', () => {
   const buttons = new ButtonsPo();
 
-  const buttonNames = ['Left', 'Middle', 'Right'];
-  const buttonOutput = ['left', 'middle', 'right'];
+  const buttonNames = [
+    'Left',
+    'Middle',
+    'Right'
+  ];
 
   beforeEach(() => buttons.navigateTo());
-
-  describe('Content section', () => {
-    it('buttons page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to button component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', buttons.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', buttons.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', buttons.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Single button', () => {
     const singleBtn = buttons.exampleDemosArr.basic;
@@ -434,10 +402,10 @@ describe('Buttons page test suite', () => {
       const defaultVal = '1';
       const afterClickVal = '0';
 
-      cy.get(singleBtn).as('singleButton').children('.card-header').as('header')
+      cy.get(` ${ singleBtn } ${ buttons.output }`).as('header')
         .should('to.contain', defaultVal);
 
-      cy.get('@singleButton').children('button').click();
+      cy.get(` ${ singleBtn } ${ buttons.buttonSel }`).click();
       cy.get('@header')
         .should('to.contain', afterClickVal);
     });
@@ -447,13 +415,18 @@ describe('Buttons page test suite', () => {
     const checkboxDemo = buttons.exampleDemosArr.checkbox;
 
     it('checkboxes can be checked or unchecked', () => {
-      buttons.clickByText(checkboxDemo, buttonNames[0]);
+      cy.get(`${ checkboxDemo } ${ buttons.output }`).as('output')
+        .should('to.contain', `"${buttonNames[1].toLowerCase()}": true`);
       buttons.clickByText(checkboxDemo, buttonNames[1]);
 
-      cy.get(checkboxDemo).children('.card-header').as('output')
-        .should('to.contain', `"${buttonOutput[0]}": true`);
-      cy.get('@output')
-        .should('to.contain', `"${buttonOutput[1]}": false`);
+      buttonNames.forEach(button => {
+        cy.get('@output')
+          .should('to.contain', `"${button.toLowerCase()}": false`);
+
+        buttons.clickByText(checkboxDemo, button);
+        cy.get('@output')
+          .should('to.contain', `"${button.toLowerCase()}": true`);
+      });
     });
   });
 
@@ -461,50 +434,67 @@ describe('Buttons page test suite', () => {
     const checkboxWithForm = buttons.exampleDemosArr.checkboxWithForms;
 
     it('checkboxes can be checked or unchecked and its\' states are displayed at reactive form', () => {
+      cy.get(` ${ checkboxWithForm } ${ buttons.output }`).as('output')
+        .should('to.contain', `"${buttonNames[1].toLowerCase()}": true`);
       buttons.clickByText(checkboxWithForm, buttonNames[1]);
-      buttons.clickByText(checkboxWithForm, buttonNames[2]);
 
-      cy.get(checkboxWithForm).children('.card-header').as('output')
-        .should('to.contain', `"${buttonOutput[1]}": false`);
-      cy.get('@output')
-        .should('to.contain', `"${buttonOutput[2]}": true`);
+      buttonNames.forEach(button => {
+        cy.get('@output')
+          .should('to.contain', `"${button.toLowerCase()}": false`);
 
-      buttons.clickByText(checkboxWithForm, buttonNames[1]);
-      cy.get('@output')
-        .should('to.contain', `"${buttonOutput[1]}": true`);
+        buttons.clickByText(checkboxWithForm, button);
+        cy.get('@output')
+          .should('to.contain', `"${button.toLowerCase()}": true`);
+      });
     });
   });
 
   describe('Radio buttons', () => {
-    const radioBtn = buttons.exampleDemosArr.radioBtn;
+    const radioCheck = buttons.exampleDemosArr.radioBtn;
 
-    it('two examples of using ngModel with radio buttons are displayed', () => {
-      cy.get(radioBtn).eq(0).as('radioBtns').find('.btn-group').as('allRadios').eq(0).as('radioNgModel');
-      cy.get('@allRadios').eq(1).as('radioBtn');
+    it('checked radio button created with ngModel is displayed in output', () => {
+      // for now we need creating this alias due to same selectors' names and classes
+      cy.get(radioCheck).eq(0).as('radio').find('.btn-group').first().as('radioNgModel');
 
-      cy.get('@radioNgModel').find('.btn').eq(0).click();
-      cy.get('@radioBtns').children('.card-header').as('formOutput')
-        .should('to.contain', 'Left');
+      buttonNames.forEach(name => {
+        buttons.clickByText('@radioNgModel', name);
 
-      cy.get('@radioBtn').find('.btn').eq(1).click();
-      cy.get('@formOutput')
-        .should('to.contain', 'Middle');
+        cy.get(`${ '@radio' }${ buttons.output }`)
+          .should('to.contain', name);
+      });
+    });
+
+    it('checked radio buttons created with btnRadioGroup is displayed in output', () => {
+      // for now we need creating this alias due to same selectors' names
+      cy.get(radioCheck).eq(0).as('radio').find(`${ buttons.btnRadioGroupSel}`).as('checkBtnRadioGroup');
+
+      buttonNames.forEach(name => {
+        buttons.clickByText('@checkBtnRadioGroup', name);
+
+        cy.get(`${ '@radio' }${ buttons.output }`)
+          .should('to.contain', name);
+      });
     });
   });
 
   describe('Uncheckable radio', () => {
-    const radio = buttons.exampleDemosArr.radioBtn;
+    const radioUncheck = buttons.exampleDemosArr.radioBtn;
 
-    it('Radio and Uncheckable Radio example contains checkboxes and radioButtons', () => {
-      cy.get(radio).eq(1).as('uncheckRadio').find('.btn-group').as('uncheckableRadio');
+    it('uncheckable radio buttons can be checked or unchecked', () => {
+      // for now we need creating this alias due to same selectors' names
+      cy.get(radioUncheck).eq(1).as('radioUncheck').find(`${ buttons.btnRadioGroupSel}`).as('uncheckBtnRadio');
 
-      cy.get('@uncheckableRadio').find('.btn').eq(2).click();
-      cy.get('@uncheckRadio').children('.card-header').as('formOutput')
-        .should('to.contain', 'Right');
+      buttonNames.forEach(name => {
+        buttons.clickByText('@uncheckBtnRadio', name);
 
-      cy.get('@uncheckableRadio').find('.btn').eq(2).click();
-      cy.get('@formOutput')
-        .should('to.contain', 'null');
+        cy.get(`${ '@radioUncheck' }${ buttons.output }`)
+          .should('to.contain', name);
+
+        buttons.clickByText('@uncheckBtnRadio', name);
+
+        cy.get(`${ '@radioUncheck' }${ buttons.output }`)
+          .should('to.be', null);
+      });
     });
   });
 
@@ -512,15 +502,14 @@ describe('Buttons page test suite', () => {
     const radioWithForm = buttons.exampleDemosArr.radioBtnWithForms;
 
     it('radio example should dynamicly update reactive form', () => {
-      const val = ['A', 'B', 'C'];
+      const btns = ['A', 'B', 'C'];
 
-      cy.get(radioWithForm).as('radioReactiveForms').find('.btn').as('radioBtn').eq(0).click();
-      cy.get('@radioReactiveForms').children('.card-header').as('output')
-        .should('to.contain', `"radio": "${val[0]}"`);
+      btns.forEach(radio => {
+        buttons.clickByText(radioWithForm, radio);
 
-      cy.get('@radioBtn').eq(1).click();
-      cy.get('@output')
-        .should('to.contain', `"radio": "${val[1]}"`);
+        cy.get(`${ radioWithForm } ${ buttons.output}`)
+          .should('to.contain', radio);
+      });
     });
   });
 
@@ -528,13 +517,11 @@ describe('Buttons page test suite', () => {
     const disabled = buttons.exampleDemosArr.disabled;
 
     it('disabled buttons examples contains button, that can be disabled', () => {
-      cy.get(disabled).as('disabledButton')
-        .should('to.have.descendants', '.btn-primary')
-        .and('to.have.descendants', '.btn-warning');
-
+      cy.get(disabled).contains('Button').as('btnForDisabling')
+        .should('to.be.enabled');
       buttons.clickByText(disabled, 'Enable/Disable');
 
-      cy.get('@disabledButton').contains('Button')
+      cy.get('@btnForDisabling')
         .should('not.to.be.enabled');
     });
   });
@@ -545,42 +532,15 @@ describe('Carousel page test suite', () => {
 
   beforeEach(() => carousel.navigateTo());
 
-  describe('Content section', () => {
-    it('page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to carousel component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', carousel.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', carousel.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', carousel.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Basic demo', () => {
     const basic = carousel.exampleDemosArr.basic;
 
-    it('demo example contains slides, indicators, left and right controlls', () => {
-      cy.get(basic).find('.carousel')
-        .should('to.have.descendants', '.carousel-indicators')
-        .and('to.have.descendants', '.carousel-inner')
-        .and('to.have.descendants', '.carousel-control-prev')
-        .and('to.have.descendants', '.carousel-control-next');
+    it('demo example contains slides, indicators, left and right controls', () => {
+      cy.get(basic).find(carousel.carouselClass)
+        .should('to.have.descendants', carousel.indicatorClass)
+        .and('to.have.descendants', carousel.itemClass)
+        .and('to.have.descendants', carousel.leftControl)
+        .and('to.have.descendants', carousel.rightControl);
     });
   });
 });
@@ -590,46 +550,18 @@ describe('Collapse demo page test suite', () => {
 
   beforeEach(() => collapse.navigateTo());
 
-  describe('Content section', () => {
-    it('collapse page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to collapse component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', collapse.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', collapse.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', collapse.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Basic demo', () => {
     const basic = collapse.exampleDemosArr.basic;
 
-    it('contains toggler and content, that could be collapsed', () => {
-      const showIndicator = 'in show';
-      const togglerText = 'Toggle collapse';
+    it('contains togler and content, that could be collapsed', () => {
+      const toglerText = 'Toggle collapse';
 
-      cy.get(basic).as('basicDemo').children('.collapse')
-        .should('to.have.class', showIndicator);
+      cy.get(`${basic} ${collapse.collapseClass}`)
+        .should('to.have.class', collapse.showIndicator);
 
-      collapse.clickByText('@basicDemo', togglerText);
-      cy.get('@basicDemo').children('.collapse')
-        .should('not.to.have.class', showIndicator);
+      collapse.clickByText(basic, toglerText);
+      cy.get(`${ basic } ${ collapse.collapseClass }`)
+        .should('not.to.have.class', collapse.showIndicator);
     });
   });
 });
@@ -638,33 +570,6 @@ describe('Datepicker demo page test suite', () => {
   const datepicker = new DatepickerPo();
 
   beforeEach(() => datepicker.navigateTo());
-
-  describe('Content section', () => {
-    it('datepicker page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to datepicker component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', datepicker.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', datepicker.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', datepicker.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Basic demo', () => {
     const basic = datepicker.exampleDemosArr.basic;
@@ -712,33 +617,6 @@ describe('Dropdowns demo page test suite', () => {
   const dropdowns = new DropdownsPo();
 
   beforeEach(() => dropdowns.navigateTo());
-
-  describe('Content section', () => {
-    it('dropdowns page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to dropdown component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', dropdowns.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', dropdowns.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', dropdowns.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Single button dropdowns', () => {
     const singleBtn = dropdowns.exampleDemosArr.singleButton;
@@ -879,33 +757,6 @@ describe('Modals demo page test suite', () => {
 
   beforeEach(() => modals.navigateTo());
 
-  describe('Content section', () => {
-    it('modals page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to modals component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', modals.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', modals.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', modals.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Service examples', () => {
 
     describe('Template modal', () => {
@@ -983,33 +834,6 @@ describe('Pagination demo page test suite', () => {
 
   beforeEach(() => pagination.navigateTo());
 
-  describe('Content section', () => {
-    it('pagination page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('pagination header contains title and link to carousel component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', pagination.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', pagination.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', pagination.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Pager example', () => {
     const pager = pagination.exampleDemosArr.pager;
 
@@ -1033,33 +857,6 @@ describe('Popover demo page test suite', () => {
 
   beforeEach(() => popover.navigateTo());
 
-  describe('Content section', () => {
-    it('popover page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to popover component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', popover.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', popover.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', popover.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Basic popover', () => {
     const basicPopover = popover.exampleDemosArr.basic;
 
@@ -1077,37 +874,10 @@ describe('Progressbar demo page test suite', () => {
 
   beforeEach(() => progressbar.navigateTo());
 
-  describe('Content section', () => {
-    it('progressbar page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to progressbar component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', progressbar.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', progressbar.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', progressbar.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Configuring defaults', () => {
     const configured = progressbar.exampleDemosArr.config;
 
-    it('preconfigured progressbar contains styles and value from config', () => {
+    it.skip('preconfigured progressbar contains styles and value from config', () => {
       cy.get(configured).children('progressbar').as('progressbarConf')
         .should('to.have.attr', 'type', 'danger')
         .and('to.have.attr', 'max', '150');
@@ -1125,33 +895,6 @@ describe('Rating demo page test suite', () => {
   const rating = new RatingPo();
 
   beforeEach(() => rating.navigateTo());
-
-  describe('Content section', () => {
-    it('rating page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to rating component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', rating.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', rating.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', rating.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Basic example', () => {
     const basic = rating.exampleDemosArr.basic;
@@ -1175,37 +918,10 @@ describe('Sortable demo page test suite', () => {
 
   beforeEach(() => sortable.navigateTo());
 
-  describe('Content section', () => {
-    it('sortable page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to sortable component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', sortable.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', sortable.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', sortable.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('String items', () => {
     const stringItem = sortable.exampleDemosArr.stringItems;
 
-    it('sortable items are placed at two sortable-wrappers', () => {
+    it.skip('sortable items are placed at two sortable-wrappers', () => {
       cy.get(stringItem).find('.sortable-wrapper').as('wrapper').eq(0)
         .should('to.have.descendants', '.sortable-item');
       cy.get(stringItem).find('.sortable-wrapper').as('wrapper')
@@ -1218,33 +934,6 @@ describe('Tabs demo page spec', () => {
   const tabs = new TabsPo();
 
   beforeEach(() => tabs.navigateTo());
-
-  describe('Content section', () => {
-    it('tabs page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to tabs component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', tabs.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', tabs.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', tabs.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
 
   describe('Configuring defaults', () => {
     const configDemo = tabs.exampleDemosArr.config;
@@ -1269,33 +958,6 @@ describe('Timepicker demo page test suite', () => {
 
   beforeEach(() => timepicker.navigateTo());
 
-  describe('Content section', () => {
-    it('timepicker page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to timepicker component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', timepicker.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', timepicker.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', timepicker.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Meridian example', () => {
     const meridian = timepicker.exampleDemosArr.meridian;
     const togglerText = '12H / 24H';
@@ -1315,33 +977,6 @@ describe('Tooltip demo page test suite', () => {
 
   beforeEach(() => tooltip.navigateTo());
 
-  describe('Content section', () => {
-    it('tooltip page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to tooltip component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', tooltip.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', tooltip.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', tooltip.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Basic tooltip', () => {
     const basic = tooltip.exampleDemosArr.basic;
 
@@ -1358,37 +993,10 @@ describe('Typeahead demo page test suite', () => {
 
   beforeEach(() => typeahead.navigateTo());
 
-  describe('Content section', () => {
-    it('typeahead page loads and displays it\'s content', () => {
-      cy.get('.content')
-        .should('be.visible');
-    });
-
-    it('content header contains title and link to typeahead component at github', () => {
-      cy.get('.content-header').children('h1').as('title')
-        .should('be.visible')
-        .and('to.contain', typeahead.pageTitle);
-
-      cy.get('@title').children('a')
-        .should('be.enabled')
-        .and('have.attr', 'href', typeahead.ghLinkToComponent);
-    });
-
-    it('usage code example is displayed at demo top section', () => {
-      cy.get('demo-top-section').as('demoTop').children('h2')
-        .should('be.visible')
-        .and('to.contain', typeahead.titleDefaultExample);
-
-      cy.get('@demoTop').children('.prettyprint')
-        .should('be.visible')
-        .and('not.to.be.empty');
-    });
-  });
-
   describe('Reactive forms', () => {
     const reactiveForm = typeahead.exampleDemosArr.reactiveForms;
 
-    it('reactive forms typeahead appears after focus at input', () => {
+    it.skip('reactive forms typeahead appears after focus at input', () => {
       cy.get(reactiveForm).as('reactiveForm').find('input').focus();
       cy.get('@reactiveForm')
         .should('to.have.descendants', 'typeahead-container');
